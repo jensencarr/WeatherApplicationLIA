@@ -42,7 +42,7 @@
             zoom: 10
         });
 
-        // Add event listener for dropdown change
+        // Add event listener for dropdown change to update map
         document.getElementById('locationSelect').addEventListener('change', function () {
             const selectedValue = this.value;
 
@@ -71,6 +71,55 @@
             // Pan to the new location
             map.panTo(newLocation);
             map.setZoom(10);
+
+            // Fetch weather data for the selected location
+            fetchWeatherData(selectedValue);
         });
+    }
+
+    function fetchWeatherData(selectedValue) {
+        let category = "pmp3g"; // Example value
+        let version = "2"; // Example value
+        let longitude, latitude;
+
+        switch (selectedValue) {
+            case 'stockholm':
+                latitude = 59.3293;
+                longitude = 18.0686;
+                break;
+            case 'gothenburg':
+                latitude = 57.7089;
+                longitude = 11.9746;
+                break;
+            case 'malmo':
+                latitude = 55.6050;
+                longitude = 13.0038;
+                break;
+            case 'uppsala':
+                latitude = 59.8586;
+                longitude = 17.6389;
+                break;
+            case 'vasteras':
+                latitude = 59.6162;
+                longitude = 16.5528;
+                break;
+            default:
+                return;
+        }
+
+        // Fetch weather data
+        fetch(`/Weather/GetWeather?category=${category}&version=${version}&longitude=${longitude}&latitude=${latitude}`)
+            .then(response => response.json())
+            .then(data => {
+                // Display data in weather section
+                document.getElementById('weather').innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center" style="height: 100%; width: 100%;">
+                        <span class="display-4">${data}°C</span>
+                    </div>`;
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+                document.getElementById('weather').innerHTML = "<p class='text-danger'>Kunde inte hämta väderdata.</p>";
+            });
     }
 </script>
