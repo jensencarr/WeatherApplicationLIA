@@ -51,4 +51,16 @@ public class HomeController : Controller
         // Exempel (pseudo): JsonConvert.DeserializeObject<WeatherResponse>(weatherData).Temperature;
         return 0.0;
     }
+    public async Task<IActionResult> GetWeather(string category, string version, double longitude, double latitude)
+{
+    try
+    {
+        var weatherData = await _weatherService.GetWeatherDataAsync(category, version, longitude, latitude);
+        return Json(weatherData);
+    }
+    catch (HttpRequestException ex)
+    {
+        return StatusCode(500, ex.Message);
+    }   
+}
 }
