@@ -1,4 +1,4 @@
-namespace YourNamespace.ViewModels
+namespace WeatherApplicationLIA.ViewModels
 {
     public class LocationWeatherViewModel
     {

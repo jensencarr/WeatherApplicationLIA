@@ -1,22 +1,77 @@
+/* Grundläggande HTML och Body-stil */
 html {
   font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
   position: relative;
   min-height: 100%;
 }
 
+@media (min-width: 768px) {
+  html {
+      font-size: 16px;
+  }
+}
+
 body {
   margin-bottom: 60px;
+}
+
+/* Formulärstilar */
+.form-group {
+  margin-top: 1rem;
+}
+
+.form-control {
+  width: 50%;
+  margin: 0 auto;
+}
+
+.form-control:focus,
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Centrering och styling för huvudtext och rubrik */
+.text-center {
+  text-align: center;
+}
+
+.display-4 {
+  font-size: 2.5rem;
+}
+
+/* Kart- och vädervisningsområdet */
+#map {
+  height: 300px;
+  width: 300px;
+}
+
+#weather {
+  height: 300px;
+  width: 300px;
+  border: 1px solid #ddd;
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#chart {
+  height: 300px;
+  width: 620px;
+  border: 1px solid #ddd;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.align-items-center {
+  align-items: center;
 }

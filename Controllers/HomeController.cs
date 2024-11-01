@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using YourNamespace.ViewModels;
+using WeatherApplicationLIA.ViewModels;
 
 public class HomeController : Controller
 {
