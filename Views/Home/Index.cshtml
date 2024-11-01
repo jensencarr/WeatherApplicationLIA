@@ -1,125 +1,32 @@
-﻿@{
+﻿@model YourNamespace.ViewModels.LocationWeatherViewModel
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
     <h1 class="display-4">Välj en lokation</h1>
-    <div class="form-group mt-4">
-        <label for="locationSelect" class="h5">Välj en stad:</label>
-        <select class="form-control w-50 mx-auto" id="locationSelect">
-            <option value="">-- Välj en lokation --</option>
-            <option value="stockholm">Stockholm</option>
-            <option value="gothenburg">Göteborg</option>
-            <option value="malmo">Malmö</option>
-            <option value="uppsala">Uppsala</option>
-            <option value="vasteras">Västerås</option>
-        </select>
-    </div>
+    <form asp-action="Index" method="post">
+        <div class="form-group mt-4">
+            <label for="locationSelect" class="h5">Välj en stad:</label>
+            <select class="form-control w-50 mx-auto" id="locationSelect" name="SelectedLocation" onchange="this.form.submit()">
+                <option value="">-- Välj en lokation --</option>
+                <option value="stockholm" @(Model.SelectedLocation == "stockholm" ? "selected" : "")>Stockholm</option>
+                <option value="gothenburg" @(Model.SelectedLocation == "gothenburg" ? "selected" : "")>Göteborg</option>
+                <option value="malmo" @(Model.SelectedLocation == "malmo" ? "selected" : "")>Malmö</option>
+                <option value="uppsala" @(Model.SelectedLocation == "uppsala" ? "selected" : "")>Uppsala</option>
+                <option value="vasteras" @(Model.SelectedLocation == "vasteras" ? "selected" : "")>Västerås</option>
+            </select>
+        </div>
+    </form>
+
     <div class="d-flex justify-content-center mt-4">
-        <div id="map" style="height: 300px; width: 300px;"></div>
+        <div id="map" style="height: 300px; width: 300px;">
+            <!-- Map coordinates will be displayed here -->
+            <p>@Model.MapLocation</p>
+        </div>
         <div id="weather" class="d-flex align-items-center justify-content-center" style="height: 300px; width: 300px; border: 1px solid #ddd; margin-left: 20px;">
-            <span class="display-4">°C</span>
+            <span class="display-4">@Model.Temperature °C</span>
         </div>
     </div>
-    <div class="d-flex justify-content-center mt-4">
-        <div id="chart" style="height: 300px; width: 620px; border: 1px solid #ddd;"></div>
-    </div>
 </div>
-
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXsPiPvGQBlVn_gUR-lj8geNaBYF0YPVg&callback=initMap" async defer></script>
-
-<script>
-    let map;
-    function initMap() {
-        // Initial position (Stockholm)
-        const initialLocation = { lat: 59.3293, lng: 18.0686 };
-
-        // Create a new map
-        map = new google.maps.Map(document.getElementById('map'), {
-            center: initialLocation,
-            zoom: 10
-        });
-
-        // Add event listener for dropdown change to update map
-        document.getElementById('locationSelect').addEventListener('change', function () {
-            const selectedValue = this.value;
-
-            // Update map based on selection
-            let newLocation;
-            switch (selectedValue) {
-                case 'stockholm':
-                    newLocation = { lat: 59.3293, lng: 18.0686 };
-                    break;
-                case 'gothenburg':
-                    newLocation = { lat: 57.7089, lng: 11.9746 };
-                    break;
-                case 'malmo':
-                    newLocation = { lat: 55.6050, lng: 13.0038 };
-                    break;
-                case 'uppsala':
-                    newLocation = { lat: 59.8586, lng: 17.6389 };
-                    break;
-                case 'vasteras':
-                    newLocation = { lat: 59.6162, lng: 16.5528 };
-                    break;
-                default:
-                    return;
-            }
-
-            // Pan to the new location
-            map.panTo(newLocation);
-            map.setZoom(10);
-
-            // Fetch weather data for the selected location
-            fetchWeatherData(selectedValue);
-        });
-    }
-
-    function fetchWeatherData(selectedValue) {
-        let category = "pmp3g"; // Example value
-        let version = "2"; // Example value
-        let longitude, latitude;
-
-        switch (selectedValue) {
-            case 'stockholm':
-                latitude = 59.3293;
-                longitude = 18.0686;
-                break;
-            case 'gothenburg':
-                latitude = 57.7089;
-                longitude = 11.9746;
-                break;
-            case 'malmo':
-                latitude = 55.6050;
-                longitude = 13.0038;
-                break;
-            case 'uppsala':
-                latitude = 59.8586;
-                longitude = 17.6389;
-                break;
-            case 'vasteras':
-                latitude = 59.6162;
-                longitude = 16.5528;
-                break;
-            default:
-                return;
-        }
-
-        // Fetch weather data
-        fetch(`/Weather/GetWeather?category=${category}&version=${version}&longitude=${longitude}&latitude=${latitude}`)
-            .then(response => response.json())
-            .then(data => {
-                // Display data in weather section
-                document.getElementById('weather').innerHTML = `
-                    <div class="d-flex align-items-center justify-content-center" style="height: 100%; width: 100%;">
-                        <span class="display-4">${data}°C</span>
-                    </div>`;
-            })
-            .catch(error => {
-                console.error('Error fetching weather data:', error);
-                document.getElementById('weather').innerHTML = "<p class='text-danger'>Kunde inte hämta väderdata.</p>";
-            });
-    }
-</script>
