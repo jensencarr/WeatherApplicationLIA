@@ -52,10 +52,10 @@ body {
   height: 300px;
   width: 300px;
   border: 1px solid #ddd;
-  margin-left: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column; /* Byter layout till kolumn */
 }
 
 #chart {
@@ -74,4 +74,14 @@ body {
 
 .align-items-center {
   align-items: center;
+}
+.weather-icon {
+  width: 110px; /* Storlek på väderikonen */
+  height: 110x;
+  margin-bottom: 25px; /* Mellanrum mellan ikon och temperatur */
+}
+
+.display-4 {
+  font-size: 2.5rem;
+  margin-bottom: 20px; /* Tar bort extra marginaler för att centrera innehållet bättre */
 }

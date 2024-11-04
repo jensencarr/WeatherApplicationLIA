@@ -9,29 +9,27 @@
     <form asp-action="Index" method="post">
         <div class="form-group mt-4">
             <label for="locationSelect" class="h5">Välj en stad:</label>
-                <select class="form-control w-50 mx-auto" id="locationSelect" name="SelectedLocation">
-                    <option value="">-- Välj en lokation --</option>
-                    <option value="stockholm" selected="@(Model.SelectedLocation == "stockholm")">Stockholm</option>
-                    <option value="gothenburg" selected="@(Model.SelectedLocation == "gothenburg")">Göteborg</option>
-                    <option value="malmo" selected="@(Model.SelectedLocation == "malmo")">Malmö</option>
-                    <option value="uppsala" selected="@(Model.SelectedLocation == "uppsala")">Uppsala</option>
-                    <option value="vasteras" selected="@(Model.SelectedLocation == "vasteras")">Västerås</option>
-                </select>
+            <select class="form-control w-50 mx-auto" id="locationSelect" name="SelectedLocation">
+                <option value="">-- Välj en lokation --</option>
+                <option value="stockholm" selected="@(Model.SelectedLocation == "stockholm")">Stockholm</option>
+                <option value="gothenburg" selected="@(Model.SelectedLocation == "gothenburg")">Göteborg</option>
+                <option value="malmo" selected="@(Model.SelectedLocation == "malmo")">Malmö</option>
+                <option value="uppsala" selected="@(Model.SelectedLocation == "uppsala")">Uppsala</option>
+                <option value="vasteras" selected="@(Model.SelectedLocation == "vasteras")">Västerås</option>
+            </select>
         </div>
     </form>
 
     <div class="d-flex justify-content-center mt-4">
-        <div id="map" style="height: 300px; width: 300px;">
+        <div id="map">
             <!-- Map coordinates will be displayed here -->
             <p>@Model.MapLocation</p>
         </div>
-        <div id="weather" class="d-flex align-items-center justify-content-center" style="height: 300px; width: 300px; border: 1px solid #ddd; margin-left: 20px;">
-            <span class="display-4">@Model.Temperature °C</span>
+        <div id="weather">
+            <!-- Temperatur och ikon visas här -->
+            <img id="weather-icon" src="" alt="Weather icon" class="weather-icon">
+            <span id="temperature" class="display-4">-- °C</span>
         </div>
-        <div id="weather" class="d-flex align-items-center justify-content-center">
-    <span class="display-4"></span>
-    <img id="weather-icon" src="" alt="Weather icon" style="width: 50px; height: 50px; margin-left: 10px;">
-</div>
     </div>
 </div>
 
@@ -82,17 +80,16 @@
 
         // Hämta väderdata för den valda platsen
         fetch(`/Home/GetWeatherData?location=${location}`)
-    .then(response => response.text()) // Tolka svaret som text
+    .then(response => response.text()) // Använd .text() istället för .json()
     .then(data => {
         console.log("Received data:", data);
 
         // Dela upp strängen i temperatur och ikon-URL
         const [temperature, iconUrl] = data.split('|');
 
-        // Visa temperaturen och ikonen
-        document.querySelector('#weather span').textContent = `${temperature}`;
-        document.querySelector('#weather-icon').src = iconUrl; // Sätt ikonen med URL
-        document.querySelector('#weather-icon').alt = `Weather icon`;
+        // Visa temperatur och ikon
+        document.querySelector('#temperature').textContent = `${temperature}`;
+        document.querySelector('#weather-icon').src = iconUrl;
     })
     .catch(error => console.error('Error fetching weather data:', error));
     }
