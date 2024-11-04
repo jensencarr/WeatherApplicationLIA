@@ -28,6 +28,10 @@
         <div id="weather" class="d-flex align-items-center justify-content-center" style="height: 300px; width: 300px; border: 1px solid #ddd; margin-left: 20px;">
             <span class="display-4">@Model.Temperature °C</span>
         </div>
+        <div id="weather" class="d-flex align-items-center justify-content-center">
+    <span class="display-4"></span>
+    <img id="weather-icon" src="" alt="Weather icon" style="width: 50px; height: 50px; margin-left: 10px;">
+</div>
     </div>
 </div>
 
@@ -61,6 +65,7 @@
         });
     });
 
+
     function updateMap(location) {
     const coordinates = {
         stockholm: { lat: 59.3293, lng: 18.0686 },
@@ -77,10 +82,17 @@
 
         // Hämta väderdata för den valda platsen
         fetch(`/Home/GetWeatherData?location=${location}`)
-    .then(response => response.text()) // Använd .text() istället för .json()
+    .then(response => response.text()) // Tolka svaret som text
     .then(data => {
-        console.log("Received data:", data); // Kontrollera att det är en sträng som visar temperaturen
-        document.querySelector('#weather span').textContent = `${data} °C`;
+        console.log("Received data:", data);
+
+        // Dela upp strängen i temperatur och ikon-URL
+        const [temperature, iconUrl] = data.split('|');
+
+        // Visa temperaturen och ikonen
+        document.querySelector('#weather span').textContent = `${temperature}`;
+        document.querySelector('#weather-icon').src = iconUrl; // Sätt ikonen med URL
+        document.querySelector('#weather-icon').alt = `Weather icon`;
     })
     .catch(error => console.error('Error fetching weather data:', error));
     }
