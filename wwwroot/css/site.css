@@ -1,87 +1,65 @@
-/* Grundläggande HTML och Body-stil */
+/* Grundläggande stil för HTML och body */
 html {
-  font-size: 14px;
-  position: relative;
+  font-size: 16px;
   min-height: 100%;
 }
 
-@media (min-width: 768px) {
-  html {
-      font-size: 16px;
-  }
-}
-
 body {
-  margin-bottom: 60px;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
 }
 
-/* Formulärstilar */
+/* Formulärcentrering */
 .form-group {
   margin-top: 1rem;
+  text-align: center;
 }
 
 .form-control {
   width: 50%;
   margin: 0 auto;
-}
-
-.form-control:focus,
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-/* Centrering och styling för huvudtext och rubrik */
+/* Rubrik och huvudtextcentrering */
 .text-center {
   text-align: center;
 }
 
 .display-4 {
   font-size: 2.5rem;
+  margin-bottom: 20px;
 }
 
-/* Kart- och vädervisningsområdet */
+/* Kart- och vädervisningsområde */
 #map {
   height: 300px;
   width: 300px;
+  margin: 0 auto;
 }
 
+/* Stil för vädervisningsruta */
 #weather {
-  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid #ddd;
   width: 300px;
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column; /* Byter layout till kolumn */
-}
-
-#chart {
   height: 300px;
-  width: 620px;
-  border: 1px solid #ddd;
+  margin: 20px auto;
+  padding: 10px;
 }
 
-.d-flex {
-  display: flex;
-}
-
-.justify-content-center {
-  justify-content: center;
-}
-
-.align-items-center {
-  align-items: center;
-}
+/* Stil för väderikon och temperatur */
 .weather-icon {
-  width: 110px; /* Storlek på väderikonen */
-  height: 110x;
-  margin-bottom: 25px; /* Mellanrum mellan ikon och temperatur */
+  width: 80px;
+  height: 80px;
+  margin-bottom: 15px;
 }
 
 .display-4 {
-  font-size: 2.5rem;
-  margin-bottom: 20px; /* Tar bort extra marginaler för att centrera innehållet bättre */
+  font-size: 2rem;
+  margin-left: 10px; /* Mellanrum mellan ikon och temperatur */
 }

@@ -32,7 +32,6 @@ public async Task<ActionResult> Index(LocationWeatherViewModel model)
         var (temperature, weatherSymbol) = ParseWeatherData(weatherData);
         
         model.Temperature = temperature;
-        // Om du vill använda weatherSymbol här kan du lägga till en egenskap i ViewModel
     }
 
     return View(model);
@@ -99,35 +98,34 @@ private (double temperature, int weatherSymbol) ParseWeatherData(string weatherD
     
 }
 
-private string GetWeatherIconUrl(int weatherSymbol)
+private string GetWeatherIconClass(int weatherSymbol)
 {
     var weatherIconMapping = new Dictionary<int, string>
     {
-        { 1, "01d" }, // Klart
-        { 2, "02d" }, // Lätt molnighet
-        { 3, "03d" }, // Halvklart
-        { 4, "04d" }, // Molnigt
-        { 5, "04d" }, // Mycket molnigt
-        { 6, "04d" }, // Mulet
-        { 7, "50d" }, // Dimma
-        { 8, "09d" }, // Lätta regnskurar
-        { 9, "10d" }, // Måttliga regnskurar
-        { 10, "11d" }, // Kraftiga regnskurar (Åska)
-        { 11, "11d" }, // Åska
-        { 12, "13d" }, // Lätta snöbyar
-        { 13, "13d" }, // Måttliga snöbyar
-        { 14, "13d" }, // Kraftiga snöbyar
-        { 15, "09d" }, // Lätt regn
-        { 16, "10d" }, // Måttligt regn
-        { 17, "10d" }, // Kraftigt regn
-        { 18, "13d" }, // Lätt snöfall
-        { 19, "13d" }, // Måttligt snöfall
-        { 20, "13d" }  // Kraftigt snöfall
+        { 1, "wi-day-sunny" },    // Klart
+        { 2, "wi-day-cloudy" },    // Lätt molnighet
+        { 3, "wi-day-cloudy" },    // Halvklart
+        { 4, "wi-cloudy" },        // Molnigt
+        { 5, "wi-cloudy" },        // Mycket molnigt
+        { 6, "wi-cloudy" },        // Mulet
+        { 7, "wi-fog" },           // Dimma
+        { 8, "wi-day-showers" },   // Lätta regnskurar
+        { 9, "wi-rain" },          // Måttliga regnskurar
+        { 10, "wi-thunderstorm" }, // Kraftiga regnskurar (Åska)
+        { 11, "wi-thunderstorm" }, // Åska
+        { 12, "wi-snow" },         // Lätta snöbyar
+        { 13, "wi-snow" },         // Måttliga snöbyar
+        { 14, "wi-snow-wind" },    // Kraftiga snöbyar
+        { 15, "wi-rain" },         // Lätt regn
+        { 16, "wi-rain" },         // Måttligt regn
+        { 17, "wi-rain-wind" },    // Kraftigt regn
+        { 18, "wi-snow" },         // Lätt snöfall
+        { 19, "wi-snow" },         // Måttligt snöfall
+        { 20, "wi-snow-wind" }     // Kraftigt snöfall
     };
 
-    // Om vädersymbolen inte finns i mappningen, använd standardikon "01d"
-    string iconId = weatherIconMapping.ContainsKey(weatherSymbol) ? weatherIconMapping[weatherSymbol] : "01d";
-    return $"http://openweathermap.org/img/wn/{iconId}.png";
+    // Om vädersymbolen inte finns i mappningen, använd standardikon "wi-day-sunny"
+    return weatherIconMapping.ContainsKey(weatherSymbol) ? weatherIconMapping[weatherSymbol] : "wi-day-sunny";
 }
 
     [HttpGet]
@@ -142,7 +140,7 @@ public async Task<IActionResult> GetWeatherData(string location)
     Console.WriteLine($"Parsed temperature: {temperature}, weather symbol: {weatherSymbol}");
 
     // Hämta ikonen baserat på weatherSymbol
-    string iconUrl = GetWeatherIconUrl(weatherSymbol);
+    string iconUrl = GetWeatherIconClass(weatherSymbol);
 
     // Returnera temperatur och ikon-URL som en formaterad sträng
     return Content($"{temperature} °C|{iconUrl}");

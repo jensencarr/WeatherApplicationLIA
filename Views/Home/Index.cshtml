@@ -8,7 +8,13 @@
     <h1 class="display-4">Välj en lokation</h1>
     <form asp-action="Index" method="post">
         <div class="form-group mt-4">
-            <label for="locationSelect" class="h5">Välj en stad:</label>
+            <!-- Temperatur och ikon visas här -->
+            <div class="d-flex align-items-center justify-content-center">
+                <!-- Använd i-tag för att lägga till ikonen som CSS-klass -->
+                <i id="weather-icon" class="wi" style="font-size: 50px; margin-right: 10px;"></i>
+                <span id="temperature" class="display-4">-- °C</span>
+            </div>
+            <label for="locationSelect" class="h5 mt-4">Välj en stad:</label>
             <select class="form-control w-50 mx-auto" id="locationSelect" name="SelectedLocation">
                 <option value="">-- Välj en lokation --</option>
                 <option value="stockholm" selected="@(Model.SelectedLocation == "stockholm")">Stockholm</option>
@@ -21,21 +27,17 @@
     </form>
 
     <div class="d-flex justify-content-center mt-4">
-        <div id="map">
-            <!-- Map coordinates will be displayed here -->
+        <div id="map" style="width: 300px; height: 300px;">
             <p>@Model.MapLocation</p>
-        </div>
-        <div id="weather">
-            <!-- Temperatur och ikon visas här -->
-            <img id="weather-icon" src="" alt="Weather icon" class="weather-icon">
-            <span id="temperature" class="display-4">-- °C</span>
         </div>
     </div>
 </div>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="~/css/weather-icons.css">
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXsPiPvGQBlVn_gUR-lj8geNaBYF0YPVg&callback=initMap" async defer></script>
+
 
 <script>
     let map;
@@ -80,16 +82,18 @@
 
         // Hämta väderdata för den valda platsen
         fetch(`/Home/GetWeatherData?location=${location}`)
-    .then(response => response.text()) // Använd .text() istället för .json()
+    .then(response => response.text())
     .then(data => {
         console.log("Received data:", data);
 
-        // Dela upp strängen i temperatur och ikon-URL
-        const [temperature, iconUrl] = data.split('|');
+        const [temperature, iconClass] = data.split('|');
+        
+        // Logga ikonklass för felsökning
+        console.log("Icon class:", iconClass);
 
-        // Visa temperatur och ikon
         document.querySelector('#temperature').textContent = `${temperature}`;
-        document.querySelector('#weather-icon').src = iconUrl;
+        const weatherIconElement = document.querySelector('#weather-icon');
+        weatherIconElement.className = `wi ${iconClass}`; 
     })
     .catch(error => console.error('Error fetching weather data:', error));
     }
