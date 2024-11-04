@@ -4,38 +4,39 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Välj en lokation</h1>
-    <form asp-action="Index" method="post">
-        <div class="form-group mt-4">
-            <!-- Temperatur och ikon visas här -->
-            <div class="d-flex align-items-center justify-content-center">
-                <!-- Använd i-tag för att lägga till ikonen som CSS-klass -->
-                <i id="weather-icon" class="wi" style="font-size: 50px; margin-right: 10px;"></i>
-                <span id="temperature" class="display-4">-- °C</span>
+<div class="weather-container">
+    <div class="text-center">
+        <h1 class="display-4">Väderprognos</h1>
+        <form asp-action="Index" method="post">
+            <div class="form-group">
+                <div class="weather-display">
+                    <i id="weather-icon" class="wi" style="font-size: 50px; margin-right: 10px;"></i>
+                    <span id="temperature" class="display-4">-- °C</span>
+                </div>
+                <label for="locationSelect" class="h5 mt-4">Välj en stad:</label>
+                <select class="form-control" id="locationSelect" name="SelectedLocation">
+                    <option value="">-- Välj en lokation --</option>
+                    <option value="stockholm" selected="@(Model.SelectedLocation == "stockholm")">Stockholm</option>
+                    <option value="gothenburg" selected="@(Model.SelectedLocation == "gothenburg")">Göteborg</option>
+                    <option value="malmo" selected="@(Model.SelectedLocation == "malmo")">Malmö</option>
+                    <option value="uppsala" selected="@(Model.SelectedLocation == "uppsala")">Uppsala</option>
+                    <option value="vasteras" selected="@(Model.SelectedLocation == "vasteras")">Västerås</option>
+                </select>
             </div>
-            <label for="locationSelect" class="h5 mt-4">Välj en stad:</label>
-            <select class="form-control w-50 mx-auto" id="locationSelect" name="SelectedLocation">
-                <option value="">-- Välj en lokation --</option>
-                <option value="stockholm" selected="@(Model.SelectedLocation == "stockholm")">Stockholm</option>
-                <option value="gothenburg" selected="@(Model.SelectedLocation == "gothenburg")">Göteborg</option>
-                <option value="malmo" selected="@(Model.SelectedLocation == "malmo")">Malmö</option>
-                <option value="uppsala" selected="@(Model.SelectedLocation == "uppsala")">Uppsala</option>
-                <option value="vasteras" selected="@(Model.SelectedLocation == "vasteras")">Västerås</option>
-            </select>
-        </div>
-    </form>
+        </form>
 
-    <div class="d-flex justify-content-center mt-4">
-        <div id="map" style="width: 300px; height: 300px;">
-            <p>@Model.MapLocation</p>
+        <div class="map-container">
+            <div id="map" style="width: 100%; height: 300px;">
+                <p>@Model.MapLocation</p>
+            </div>
         </div>
     </div>
-    <div class="text-center mt-4">
-    <h3>Kommande 8 timmars temperatur</h3>
-    <div id="hourly-temperature-row" class="d-flex justify-content-center"></div>
 </div>
 
+<div class="forecast-container">
+    <h3>Kommande 8 timmars temperatur</h3>
+    <div id="forecast-date" class="forecast-date">Datum: --</div>
+    <div id="hourly-temperature-row" class="d-flex justify-content-center"></div>
 </div>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -105,20 +106,27 @@
         .then(response => response.text())
         .then(data => {
             const rowContainer = document.getElementById('hourly-temperature-row');
+            const forecastDateContainer = document.getElementById('forecast-date');
             rowContainer.innerHTML = ''; // Rensa tidigare data
 
             // Dela upp den mottagna data-strängen
-            const hourlyData = data.split(', '); // Antar att varje timdata är separerad med ", "
+            const hourlyData = data.split(', ');
             
+            // Visa datum en gång
+            const firstTime = hourlyData[0].split(': ')[0];
+            const date = new Date(firstTime).toLocaleDateString();
+            forecastDateContainer.textContent = `Datum: ${date}`;
+
             hourlyData.forEach(entry => {
-                const [time, temp] = entry.split(': '); // Antar att varje par är separerat av ": "
+                const [time, temp] = entry.split(': ');
+                const hour = new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                 // Skapa en container för varje timme
                 const hourContainer = document.createElement('div');
                 hourContainer.classList.add('hour-item', 'text-center');
                 hourContainer.style.margin = "0 10px";
                 hourContainer.innerHTML = `
-                    <div class="hour">${time}</div>
+                    <div class="hour">${hour}</div>
                     <div class="temp">${temp}</div>
                 `;
 
