@@ -29,7 +29,7 @@ public async Task<ActionResult> Index(LocationWeatherViewModel model)
         string weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
         
         // Använd den nya ParseWeatherData-metoden för att hämta både temperatur och vädersymbol
-        var (temperature, weatherSymbol) = ParseWeatherData(weatherData);
+        var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
         
         model.Temperature = temperature;
     }
@@ -50,7 +50,46 @@ public async Task<ActionResult> Index(LocationWeatherViewModel model)
         };
     }
 
-private (double temperature, int weatherSymbol) ParseWeatherData(string weatherData)
+public async Task<IActionResult> GetHourlyTemperatures(string location)
+{
+    (double lat, double lon) = GetCoordinates(location);
+    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
+
+    // Parsar väderdata för de närmaste 8 timmarna
+    var hourlyData = ParseHourlyTemperatures(weatherData, 8);
+
+    // Logga alla tider och temperaturer
+    Console.WriteLine("Kommande 8 timmars prognos för platsen:");
+    foreach (var data in hourlyData)
+    {
+        Console.WriteLine($"Tid: {data.Time}, Temperatur: {data.Temperature} °C");
+    }
+
+    // Skapa en formaterad sträng för att returnera som Content
+    var hourlyDataString = string.Join(", ", hourlyData.Select(d => $"{d.Time}: {d.Temperature} °C"));
+    return Content(hourlyDataString);
+}
+
+
+private List<(string Time, double Temperature)> ParseHourlyTemperatures(string weatherData, int hours)
+{
+    var json = JObject.Parse(weatherData);
+    var timeSeries = json["timeSeries"];
+    var hourlyTemperatures = new List<(string Time, double Temperature)>();
+
+    foreach (var timePoint in timeSeries.Take(hours))
+    {
+        var time = timePoint["validTime"].ToString();
+        var temperature = timePoint["parameters"]
+                            .FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
+
+        hourlyTemperatures.Add((Time: time, Temperature: temperature));
+    }
+
+    return hourlyTemperatures;
+}
+
+private (double temperature, int weatherSymbol) ParseTemperatureNow(string weatherData)
 {
     double temperature = 0.0;
     int weatherSymbol = -1;
@@ -60,11 +99,12 @@ private (double temperature, int weatherSymbol) ParseWeatherData(string weatherD
         var json = JObject.Parse(weatherData);
         var timeSeries = json["timeSeries"];
 
-        if (timeSeries != null && timeSeries.Any())
+        // Kontrollera att det finns minst två poster i timeSeries
+        if (timeSeries != null && timeSeries.Count() >= 2)
         {
-            var firstTimeSeries = timeSeries.First;
+            var secondTimeSeries = timeSeries.Skip(1).First(); // Väljer det andra objektet
 
-            foreach (var parameter in firstTimeSeries["parameters"])
+            foreach (var parameter in secondTimeSeries["parameters"])
             {
                 if (parameter["name"]?.ToString() == "t") // Temperatur
                 {
@@ -129,13 +169,13 @@ private string GetWeatherIconClass(int weatherSymbol)
 }
 
     [HttpGet]
-public async Task<IActionResult> GetWeatherData(string location)
+public async Task<IActionResult> GetWeatherTemperatureNow(string location)
 {
     (double lat, double lon) = GetCoordinates(location);
     var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
     
     // Hämta temperatur och vädersymbol
-    var (temperature, weatherSymbol) = ParseWeatherData(weatherData);
+    var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
 
     Console.WriteLine($"Parsed temperature: {temperature}, weather symbol: {weatherSymbol}");
 

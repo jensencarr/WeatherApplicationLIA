@@ -31,6 +31,11 @@
             <p>@Model.MapLocation</p>
         </div>
     </div>
+    <div class="text-center mt-4">
+    <h3>Kommande 8 timmars temperatur</h3>
+    <div id="hourly-temperature-row" class="d-flex justify-content-center"></div>
+</div>
+
 </div>
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -81,21 +86,47 @@
         marker.setPosition(newPosition);
 
         // Hämta väderdata för den valda platsen
-        fetch(`/Home/GetWeatherData?location=${location}`)
+        fetch(`/Home/GetWeatherTemperatureNow?location=${location}`)
     .then(response => response.text())
     .then(data => {
-        console.log("Received data:", data);
 
         const [temperature, iconClass] = data.split('|');
-        
-        // Logga ikonklass för felsökning
-        console.log("Icon class:", iconClass);
-
         document.querySelector('#temperature').textContent = `${temperature}`;
-        const weatherIconElement = document.querySelector('#weather-icon');
-        weatherIconElement.className = `wi ${iconClass}`; 
+        document.querySelector('#weather-icon').className = `wi ${iconClass}`;
     })
     .catch(error => console.error('Error fetching weather data:', error));
+
+    // Hämta och visa timvisa temperaturer
+    updateHourlyTemperatures(location);
     }
+
+    function updateHourlyTemperatures(location) {
+    fetch(`/Home/GetHourlyTemperatures?location=${location}`)
+        .then(response => response.text())
+        .then(data => {
+            const rowContainer = document.getElementById('hourly-temperature-row');
+            rowContainer.innerHTML = ''; // Rensa tidigare data
+
+            // Dela upp den mottagna data-strängen
+            const hourlyData = data.split(', '); // Antar att varje timdata är separerad med ", "
+            
+            hourlyData.forEach(entry => {
+                const [time, temp] = entry.split(': '); // Antar att varje par är separerat av ": "
+
+                // Skapa en container för varje timme
+                const hourContainer = document.createElement('div');
+                hourContainer.classList.add('hour-item', 'text-center');
+                hourContainer.style.margin = "0 10px";
+                hourContainer.innerHTML = `
+                    <div class="hour">${time}</div>
+                    <div class="temp">${temp}</div>
+                `;
+
+                rowContainer.appendChild(hourContainer);
+            });
+        })
+        .catch(error => console.error('Error fetching hourly temperatures:', error));
 }
+}
+
 </script>
