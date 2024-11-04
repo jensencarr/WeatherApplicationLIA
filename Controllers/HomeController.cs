@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WeatherApplicationLIA.ViewModels;
+using Newtonsoft.Json.Linq;
 
 public class HomeController : Controller
 {
@@ -46,11 +47,34 @@ public class HomeController : Controller
     }
 
     private double ParseTemperature(string weatherData)
+{
+    try
     {
-        // Implementera JSON parsing här för att extrahera temperaturvärdet från väderdata
-        // Exempel (pseudo): JsonConvert.DeserializeObject<WeatherResponse>(weatherData).Temperature;
-        return 0.0;
+        var json = JObject.Parse(weatherData);
+        var timeSeries = json["timeSeries"];
+
+        if (timeSeries != null && timeSeries.Any())
+        {
+            // Hämtar den första posten i `timeSeries`
+            var firstTimeSeries = timeSeries.First;
+
+            // Går igenom parametrarna för att hitta temperaturen
+            foreach (var parameter in firstTimeSeries["parameters"])
+            {
+                if (parameter["name"]?.ToString() == "t") // "t" är parametern för temperatur
+                {
+                    return parameter["values"]?[0]?.Value<double>() ?? 0.0;
+                }
+            }
+        }
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error parsing temperature: {ex.Message}");
+    }
+
+    return 0.0; // Returnera 0 om temperatur inte hittas
+}
     public async Task<IActionResult> GetWeather(string category, string version, double longitude, double latitude)
 {
     try
@@ -62,5 +86,19 @@ public class HomeController : Controller
     {
         return StatusCode(500, ex.Message);
     }   
+    
 }
+    [HttpGet]
+[HttpGet]
+public async Task<IActionResult> GetWeatherData(string location)
+{
+    (double lat, double lon) = GetCoordinates(location);
+    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
+    var temperature = ParseTemperature(weatherData);
+
+    Console.WriteLine($"Parsed temperature: {temperature}");
+
+    return Content(temperature.ToString(System.Globalization.CultureInfo.InvariantCulture));
+}
+
 }

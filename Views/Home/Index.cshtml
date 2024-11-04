@@ -62,20 +62,27 @@
     });
 
     function updateMap(location) {
-        // Definiera koordinaterna för varje plats
-        const coordinates = {
-            stockholm: { lat: 59.3293, lng: 18.0686 },
-            gothenburg: { lat: 57.7089, lng: 11.9746 },
-            malmo: { lat: 55.6050, lng: 13.0038 },
-            uppsala: { lat: 59.8586, lng: 17.6389 },
-            vasteras: { lat: 59.6162, lng: 16.5528 }
-        };
+    const coordinates = {
+        stockholm: { lat: 59.3293, lng: 18.0686 },
+        gothenburg: { lat: 57.7089, lng: 11.9746 },
+        malmo: { lat: 55.6050, lng: 13.0038 },
+        uppsala: { lat: 59.8586, lng: 17.6389 },
+        vasteras: { lat: 59.6162, lng: 16.5528 }
+    };
 
-        // Om platsen finns, uppdatera kartans position och markörens position
-        if (coordinates[location]) {
-            const newPosition = coordinates[location];
-            map.setCenter(newPosition);
-            marker.setPosition(newPosition);
-        }
+    if (coordinates[location]) {
+        const newPosition = coordinates[location];
+        map.setCenter(newPosition);
+        marker.setPosition(newPosition);
+
+        // Hämta väderdata för den valda platsen
+        fetch(`/Home/GetWeatherData?location=${location}`)
+    .then(response => response.text()) // Använd .text() istället för .json()
+    .then(data => {
+        console.log("Received data:", data); // Kontrollera att det är en sträng som visar temperaturen
+        document.querySelector('#weather span').textContent = `${data} °C`;
+    })
+    .catch(error => console.error('Error fetching weather data:', error));
     }
+}
 </script>
