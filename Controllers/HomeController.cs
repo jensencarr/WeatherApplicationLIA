@@ -50,46 +50,6 @@ public async Task<ActionResult> Index(LocationWeatherViewModel model)
         };
     }
 
-public async Task<IActionResult> GetHourlyTemperatures(string location)
-{
-    (double lat, double lon) = GetCoordinates(location);
-    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
-
-    // Hämtar väder data senaste 8 timmarna
-    var hourlyData = ParseHourlyTemperatures(weatherData, 12);
-
-    // Logga alla tider och temperaturer
-    Console.WriteLine("Kommande 12 timmars prognos för platsen:");
-    foreach (var data in hourlyData)
-    {
-        Console.WriteLine($"Tid: {data.Time}, Temperatur: {data.Temperature} °C");
-    }
-
-    // Skapa en formaterad sträng för att returnera som Content
-    var hourlyDataString = string.Join(", ", hourlyData.Select(d => $"{d.Time}: {d.Temperature} °C|{GetWeatherIconClass(d.WeatherSymbol)}"));
-    return Content(hourlyDataString);
-}
-
-
-private List<(string Time, double Temperature, int WeatherSymbol)> ParseHourlyTemperatures(string weatherData, int hours)
-{
-    var json = JObject.Parse(weatherData);
-    var timeSeries = json["timeSeries"];
-    var hourlyTemperatures = new List<(string Time, double Temperature, int WeatherSymbol)>();
-
-    foreach (var timePoint in timeSeries.Take(hours))
-    {
-        var time = timePoint["validTime"].ToString();
-        var temperature = timePoint["parameters"]
-                            .FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
-        var weatherSymbol = timePoint["parameters"]
-                            .FirstOrDefault(p => p["name"].ToString() == "Wsymb2")?["values"]?[0]?.Value<int>() ?? -1;
-
-        hourlyTemperatures.Add((Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol));
-    }
-
-    return hourlyTemperatures;
-}
 
 private (double temperature, int weatherSymbol) ParseTemperatureNow(string weatherData)
 {
@@ -179,8 +139,6 @@ public async Task<IActionResult> GetWeatherTemperatureNow(string location)
 {
     (double lat, double lon) = GetCoordinates(location);
     var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
-    
-    Console.WriteLine($"Fetched weather data: {weatherData}"); // Logga hela väderdatat
 
     // Hämta temperatur och vädersymbol
     var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
@@ -236,7 +194,6 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
         var hourlyDataString = string.Join(", ", dataForSelectedDate
             .Select(d => $"{d.Time}: {d.Temperature} °C|{GetWeatherIconClass(d.WeatherSymbol)}"));
         
-        Console.WriteLine("Formatted data string sent to client: " + hourlyDataString); // Ny logg
         return Content(hourlyDataString);
     }
     else
@@ -246,6 +203,48 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
     }
 }
 
-
-
 }
+
+
+/* public async Task<IActionResult> GetHourlyTemperatures(string location) // Hämtar väder 12 kommande timmarna
+{
+    (double lat, double lon) = GetCoordinates(location);
+    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
+
+    // Hämtar väder data senaste 8 timmarna
+    var hourlyData = ParseHourlyTemperatures(weatherData, 12);
+
+    // Logga alla tider och temperaturer
+    Console.WriteLine("Kommande 12 timmars prognos för platsen:");
+    foreach (var data in hourlyData)
+    {
+        Console.WriteLine($"Tid: {data.Time}, Temperatur: {data.Temperature} °C");
+    }
+
+    // Skapa en formaterad sträng för att returnera som Content
+    var hourlyDataString = string.Join(", ", hourlyData.Select(d => $"{d.Time}: {d.Temperature} °C|{GetWeatherIconClass(d.WeatherSymbol)}"));
+    return Content(hourlyDataString); 
+} 
+
+
+private List<(string Time, double Temperature, int WeatherSymbol)> ParseHourlyTemperatures(string weatherData, int hours) // Parsar GetHourlyTemperatures
+{
+    var json = JObject.Parse(weatherData);
+    var timeSeries = json["timeSeries"];
+    var hourlyTemperatures = new List<(string Time, double Temperature, int WeatherSymbol)>();
+
+    foreach (var timePoint in timeSeries.Take(hours))
+    {
+        var time = timePoint["validTime"].ToString();
+        var temperature = timePoint["parameters"]
+                            .FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
+        var weatherSymbol = timePoint["parameters"]
+                            .FirstOrDefault(p => p["name"].ToString() == "Wsymb2")?["values"]?[0]?.Value<int>() ?? -1;
+
+        hourlyTemperatures.Add((Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol));
+    }
+
+    return hourlyTemperatures;
+} */
+
+
