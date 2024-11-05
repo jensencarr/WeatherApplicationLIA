@@ -111,21 +111,23 @@
 
             // Dela upp den mottagna data-strängen
             const hourlyData = data.split(', ');
-            
+
             // Visa datum en gång
             const firstTime = hourlyData[0].split(': ')[0];
             const date = new Date(firstTime).toLocaleDateString();
             forecastDateContainer.textContent = `Datum: ${date}`;
 
             hourlyData.forEach(entry => {
-                const [time, temp] = entry.split(': ');
+                const [timeTemp, iconClass] = entry.split('|');
+                const [time, temp] = timeTemp.split(': ');
                 const hour = new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                // Skapa en container för varje timme
+                // Skapa en container för varje timme med ikon
                 const hourContainer = document.createElement('div');
                 hourContainer.classList.add('hour-item', 'text-center');
                 hourContainer.style.margin = "0 10px";
                 hourContainer.innerHTML = `
+                    <i class="wi ${iconClass}" style="font-size: 24px;"></i>
                     <div class="hour">${hour}</div>
                     <div class="temp">${temp}</div>
                 `;

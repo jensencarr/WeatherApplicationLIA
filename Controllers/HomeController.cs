@@ -55,7 +55,7 @@ public async Task<IActionResult> GetHourlyTemperatures(string location)
     (double lat, double lon) = GetCoordinates(location);
     var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
 
-    // Parsar väderdata för de närmaste 8 timmarna
+    // Hämtar väder data senaste 8 timmarna
     var hourlyData = ParseHourlyTemperatures(weatherData, 8);
 
     // Logga alla tider och temperaturer
@@ -66,24 +66,26 @@ public async Task<IActionResult> GetHourlyTemperatures(string location)
     }
 
     // Skapa en formaterad sträng för att returnera som Content
-    var hourlyDataString = string.Join(", ", hourlyData.Select(d => $"{d.Time}: {d.Temperature} °C"));
+    var hourlyDataString = string.Join(", ", hourlyData.Select(d => $"{d.Time}: {d.Temperature} °C|{GetWeatherIconClass(d.WeatherSymbol)}"));
     return Content(hourlyDataString);
 }
 
 
-private List<(string Time, double Temperature)> ParseHourlyTemperatures(string weatherData, int hours)
+private List<(string Time, double Temperature, int WeatherSymbol)> ParseHourlyTemperatures(string weatherData, int hours)
 {
     var json = JObject.Parse(weatherData);
     var timeSeries = json["timeSeries"];
-    var hourlyTemperatures = new List<(string Time, double Temperature)>();
+    var hourlyTemperatures = new List<(string Time, double Temperature, int WeatherSymbol)>();
 
     foreach (var timePoint in timeSeries.Take(hours))
     {
         var time = timePoint["validTime"].ToString();
         var temperature = timePoint["parameters"]
                             .FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
+        var weatherSymbol = timePoint["parameters"]
+                            .FirstOrDefault(p => p["name"].ToString() == "Wsymb2")?["values"]?[0]?.Value<int>() ?? -1;
 
-        hourlyTemperatures.Add((Time: time, Temperature: temperature));
+        hourlyTemperatures.Add((Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol));
     }
 
     return hourlyTemperatures;

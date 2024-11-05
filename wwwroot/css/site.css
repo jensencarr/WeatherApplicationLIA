@@ -24,23 +24,24 @@ body {
 
 /* Prognoscontainer för timvis temperatur */
 .forecast-container {
-  max-width: 800px; /* Gör denna rutan bredare än huvudväderramen */
-  margin: 20px auto;
-  padding: 20px;
+  width: 95%; /* Gör prognosrutan nästan hela sidbredden */
+  max-width: 1200px; /* Sätter en maxbredd för större skärmar */
+  margin: 30px auto; /* Justerar avstånd ovan och nedan */
+  padding: 25px; /* Mer padding för högre höjd */
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .forecast-container h3 {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   color: #333;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 #forecast-date {
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   color: #555;
 }
 
@@ -50,15 +51,16 @@ body {
   justify-content: space-around;
   flex-wrap: nowrap;
   overflow-x: auto;
-  padding: 10px 0;
+  padding: 15px 0; /* Öka padding för mer luft */
 }
 
 .hour-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 0.9rem;
-  margin: 0 10px;
+  width: 100px; /* Bredare yta per timme */
+  font-size: 1.1rem;
+  margin: 0 15px;
   color: #333;
 }
 
@@ -68,5 +70,7 @@ body {
 }
 
 .temp {
-  font-size: 1.2rem;
+  font-size: 1.6rem; /* Gör temperaturen ännu större */
+  font-weight: bold;
+  color: #333;
 }
