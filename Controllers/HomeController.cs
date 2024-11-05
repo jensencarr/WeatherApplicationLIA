@@ -56,7 +56,7 @@ public async Task<IActionResult> GetHourlyTemperatures(string location)
     var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
 
     // Hämtar väder data senaste 8 timmarna
-    var hourlyData = ParseHourlyTemperatures(weatherData, 8);
+    var hourlyData = ParseHourlyTemperatures(weatherData, 12);
 
     // Logga alla tider och temperaturer
     Console.WriteLine("Kommande 8 timmars prognos för platsen:");

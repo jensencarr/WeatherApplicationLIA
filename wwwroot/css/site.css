@@ -24,24 +24,24 @@ body {
 
 /* Prognoscontainer för timvis temperatur */
 .forecast-container {
-  width: 95%; /* Gör prognosrutan nästan hela sidbredden */
-  max-width: 1200px; /* Sätter en maxbredd för större skärmar */
-  margin: 30px auto; /* Justerar avstånd ovan och nedan */
-  padding: 25px; /* Mer padding för högre höjd */
+  width: 110%;
+  max-width: 1200px;
+  padding: 20px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-left: -4%; /* Flyttar containern till vänster */
 }
 
 .forecast-container h3 {
   font-size: 1.7rem;
   color: #333;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 #forecast-date {
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   color: #555;
 }
 
@@ -50,18 +50,24 @@ body {
   display: flex;
   justify-content: space-around;
   flex-wrap: nowrap;
-  overflow-x: auto;
-  padding: 15px 0; /* Öka padding för mer luft */
+  overflow-x: auto; /* Aktiverar horisontell scroll om det behövs */
+  padding: 15px 0;
+  gap: 15px;
 }
 
 .hour-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100px; /* Bredare yta per timme */
-  font-size: 1.1rem;
-  margin: 0 15px;
+  width: 150px; /* Bredare yta per timme */
+  font-size: 1rem;
   color: #333;
+}
+
+.hour-item i {
+  font-size: 2rem; /* Större ikon */
+  color: #555;
+  margin-bottom: 5px;
 }
 
 .hour {
@@ -70,7 +76,7 @@ body {
 }
 
 .temp {
-  font-size: 1.6rem; /* Gör temperaturen ännu större */
+  font-size: 1.3rem; /* Mindre temperaturtext */
   font-weight: bold;
   color: #333;
 }
