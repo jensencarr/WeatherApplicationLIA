@@ -18,7 +18,7 @@
             <div class="form-group">
                 <div class="weather-display">
                     <i id="weather-icon" class="wi" style="font-size: 50px; margin-right: 10px;"></i>
-                    <span id="temperature" class="display-4">-- °C</span>
+                    <span id="temperature" class="display-4">--</span>
                 </div>
                 <label for="locationSelect" class="h5 mt-4">Välj en stad:</label>
                 <select class="form-control" id="locationSelect" name="SelectedLocation">
@@ -127,36 +127,39 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.getElementById("getTemperature").addEventListener("click", function () {
-        const selectedDate = document.getElementById("dateSelect").value;
-        const location = document.getElementById("locationSelect").value;
+    const selectedDate = document.getElementById("dateSelect").value;
+    const location = document.getElementById("locationSelect").value;
 
-        if (selectedDate && location) {
-            fetch(`/Home/GetTemperatureForSelectedDate?location=${location}&date=${selectedDate}`)
-                .then(response => response.text())
-                .then(data => {
-                    const hourlyTemperatureRow = document.getElementById("hourly-temperature-row");
-                    hourlyTemperatureRow.innerHTML = "";
+    if (selectedDate && location) {
+        // Sätt det valda datumet i forecast-date innan du hämtar data
+        document.getElementById("forecast-date").textContent = `Datum: ${selectedDate}`;
 
-                    const hourlyDataArray = data.split(", ");
-                    hourlyDataArray.forEach(hourData => {
-                        const [timeTemp, iconClass] = hourData.split("|");
-                        const [time, temperature] = timeTemp.split(": ");
+        fetch(`/Home/GetTemperatureForSelectedDate?location=${location}&date=${selectedDate}`)
+            .then(response => response.text())
+            .then(data => {
+                const hourlyTemperatureRow = document.getElementById("hourly-temperature-row");
+                hourlyTemperatureRow.innerHTML = "";
 
-                        const hourItem = document.createElement("div");
-                        hourItem.classList.add("hour-item", "text-center");
-                        hourItem.innerHTML = `
-                            <i class="wi ${iconClass.trim()}" style="font-size: 50px;"></i>
-                            <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                            <div class="temp" data-original-temp="${temperature}">${convertTemperature(parseFloat(temperature), currentUnit)} °${currentUnit}</div>
-                        `;
-                        hourlyTemperatureRow.appendChild(hourItem);
-                    });
-                })
-                .catch(error => console.error("Error fetching temperature data:", error));
-        } else {
-            alert("Vänligen välj ett datum och en plats.");
-        }
-    });
+                const hourlyDataArray = data.split(", ");
+                hourlyDataArray.forEach(hourData => {
+                    const [timeTemp, iconClass] = hourData.split("|");
+                    const [time, temperature] = timeTemp.split(": ");
+
+                    const hourItem = document.createElement("div");
+                    hourItem.classList.add("hour-item", "text-center");
+                    hourItem.innerHTML = `
+                        <i class="wi ${iconClass.trim()}" style="font-size: 50px;"></i>
+                        <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div class="temp" data-original-temp="${temperature}">${convertTemperature(parseFloat(temperature), currentUnit)} °${currentUnit}</div>
+                    `;
+                    hourlyTemperatureRow.appendChild(hourItem);
+                });
+            })
+            .catch(error => console.error("Error fetching temperature data:", error));
+    } else {
+        alert("Vänligen välj ett datum och en plats.");
+    }
+});
 });
 
 function updateMap(location) {
