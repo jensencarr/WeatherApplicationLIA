@@ -21,6 +21,15 @@
                     <option value="malmo" selected="@(Model.SelectedLocation == "malmo")">Malmö</option>
                     <option value="uppsala" selected="@(Model.SelectedLocation == "uppsala")">Uppsala</option>
                     <option value="vasteras" selected="@(Model.SelectedLocation == "vasteras")">Västerås</option>
+                    <option value="orebro" selected="@(Model.SelectedLocation == "orebro")">Örebro</option>
+                    <option value="helsingborg" selected="@(Model.SelectedLocation == "helsingborg")">Helsingborg</option>
+                    <option value="jonkoping" selected="@(Model.SelectedLocation == "jonkoping")">Jönköping</option>
+                    <option value="norrkoping" selected="@(Model.SelectedLocation == "norrkoping")">Norrköping</option>
+                    <option value="lund" selected="@(Model.SelectedLocation == "lund")">Lund</option>
+                    <option value="umea" selected="@(Model.SelectedLocation == "umea")">Umeå</option>
+                    <option value="gavle" selected="@(Model.SelectedLocation == "gavle")">Gävle</option>
+                    <option value="kiruna" selected="@(Model.SelectedLocation == "kiruna")">Kiruna</option>
+                    <option value="ornskoldsvik" selected="@(Model.SelectedLocation == "ornskoldsvik")">Örnsköldsvik</option>
                 </select>
             </div>
         </form>
@@ -124,7 +133,16 @@
         gothenburg: { lat: 57.7089, lng: 11.9746 },
         malmo: { lat: 55.6050, lng: 13.0038 },
         uppsala: { lat: 59.8586, lng: 17.6389 },
-        vasteras: { lat: 59.6162, lng: 16.5528 }
+        vasteras: { lat: 59.6162, lng: 16.5528 },
+        orebro: { lat: 59.2741, lng: 15.2066 },
+        helsingborg: { lat: 56.0465, lng: 12.6945 },
+        jonkoping: { lat: 57.7815, lng: 14.1562 },
+        norrkoping: { lat: 58.5877, lng: 16.1924 },
+        lund: { lat: 55.7047, lng: 13.1910 },
+        umea: { lat: 63.8258, lng: 20.2630 },
+        gavle: { lat: 60.6749, lng: 17.1413 },
+        kiruna: { lat: 67.8557, lng: 20.2253 },
+        ornskoldsvik: { lat: 63.2909, lng: 18.7152 }
     };
 
     if (coordinates[location]) {

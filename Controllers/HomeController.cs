@@ -38,17 +38,26 @@ public async Task<ActionResult> Index(LocationWeatherViewModel model)
 }
 
     private (double lat, double lon) GetCoordinates(string location)
+{
+    return location switch
     {
-        return location switch
-        {
-            "stockholm" => (59.3293, 18.0686),
-            "gothenburg" => (57.7089, 11.9746),
-            "malmo" => (55.6050, 13.0038),
-            "uppsala" => (59.8586, 17.6389),
-            "vasteras" => (59.6162, 16.5528),
-            _ => (59.3293, 18.0686) // Default till Stockholm
-        };
-    }
+        "stockholm" => (59.3293, 18.0686),
+        "gothenburg" => (57.7089, 11.9746),
+        "malmo" => (55.6050, 13.0038),
+        "uppsala" => (59.8586, 17.6389),
+        "vasteras" => (59.6162, 16.5528),
+        "orebro" => (59.2741, 15.2066),
+        "helsingborg" => (56.0465, 12.6945),
+        "jonkoping" => (57.7815, 14.1562),
+        "norrkoping" => (58.5877, 16.1924),
+        "lund" => (55.7047, 13.1910),
+        "umea" => (63.8258, 20.2630),
+        "gavle" => (60.6749, 17.1413),
+        "kiruna" => (67.8557, 20.2253),
+        "ornskoldsvik" => (63.2909, 18.7152),
+        _ => (59.3293, 18.0686) // Standard till Stockholm om platsen inte finns
+    };
+}
 
 
 private (double temperature, int weatherSymbol) ParseTemperatureNow(string weatherData)
@@ -172,9 +181,14 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
 
     Console.WriteLine($"Parsed Selected Date: {selectedDate}");
 
+    // Filtrera ut datapunkter för det valda datumet, startande från 08:00 och max 15 punkter
     var dataForSelectedDate = timeSeries
-        .Where(ts => DateTime.Parse(ts["validTime"].ToString()).Date == selectedDate.Date)
-        .Take(12)
+        .Where(ts =>
+        {
+            var time = DateTime.Parse(ts["validTime"].ToString());
+            return time.Date == selectedDate.Date && time.TimeOfDay >= TimeSpan.FromHours(8);
+        })
+        .Take(14)
         .Select(ts =>
         {
             var time = ts["validTime"].ToString();
