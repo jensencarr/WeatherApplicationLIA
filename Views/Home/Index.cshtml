@@ -30,11 +30,19 @@
                 <p>@Model.MapLocation</p>
             </div>
         </div>
+
+        <!-- Lägg till datum- och tidsväljaren här -->
+        <div class="date-time-selector-container mt-4">
+            <label for="dateSelect" class="h5">Välj datum:</label>
+            <input type="date" id="dateSelect" class="form-control" min="{{ today }}" max="{{ nineDaysAhead }}">
+
+            <button id="getTemperature" class="btn btn-primary mt-3">Visa temperatur</button>
+        </div>
     </div>
 </div>
 
 <div class="forecast-container">
-    <h3>Kommande 8 timmars temperatur</h3>
+    <h3>Temperatur för valda datumet</h3>
     <div id="forecast-date" class="forecast-date">Datum: --</div>
     <div id="hourly-temperature-row" class="d-flex justify-content-center"></div>
 </div>
@@ -44,14 +52,12 @@
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXsPiPvGQBlVn_gUR-lj8geNaBYF0YPVg&callback=initMap" async defer></script>
 
-
 <script>
     let map;
     let marker;
 
     function initMap() {
-        // Starta kartan med Stockholm som standard
-        const initialPosition = { lat: 59.3293, lng: 18.0686 };
+        const initialPosition = { lat: 59.3293, lng: 18.0686 }; // Stockholm som standard
         map = new google.maps.Map(document.getElementById("map"), {
             center: initialPosition,
             zoom: 10,
@@ -64,13 +70,53 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        // Lyssna på ändringar i platsväljaren och uppdatera kartan
         document.getElementById("locationSelect").addEventListener("change", function () {
             const location = this.value;
             updateMap(location);
         });
-    });
 
+        document.getElementById("getTemperature").addEventListener("click", function () {
+            const selectedDate = document.getElementById("dateSelect").value;
+            const location = document.getElementById("locationSelect").value;
+
+            if (selectedDate && location) {
+                fetch(`/Home/GetTemperatureForSelectedDate?location=${location}&date=${selectedDate}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log("Data fetched from server:", data);
+
+                        if (data === "Ingen data|wi-na") {
+                            alert("Ingen väderdata tillgänglig för det valda datumet.");
+                            return;
+                        }
+
+                        document.getElementById("forecast-date").textContent = `Datum: ${selectedDate}`;
+                        const hourlyTemperatureRow = document.getElementById("hourly-temperature-row");
+                        hourlyTemperatureRow.innerHTML = "";
+
+                        const hourlyDataArray = data.split(", ");
+                        hourlyDataArray.forEach(hourData => {
+                            const [timeTemp, iconClass] = hourData.split("|");
+                            if (timeTemp && iconClass) {
+                                const [time, temperature] = timeTemp.split(": ");
+
+                                const hourItem = document.createElement("div");
+                                hourItem.classList.add("hour-item", "text-center");
+                                hourItem.innerHTML = `
+                                    <i class="wi ${iconClass.trim()}" style="font-size: 50px;"></i>
+                                    <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                    <div class="temp">${temperature}</div>
+                                `;
+                                hourlyTemperatureRow.appendChild(hourItem);
+                            }
+                        });
+                    })
+                    .catch(error => console.error("Error fetching temperature data:", error));
+            } else {
+                alert("Vänligen välj ett datum och en plats.");
+            }
+        });
+    });
 
     function updateMap(location) {
     const coordinates = {
@@ -86,57 +132,17 @@
         map.setCenter(newPosition);
         marker.setPosition(newPosition);
 
-        // Hämta väderdata för den valda platsen
+        // Hämta aktuell temperatur för vald plats och uppdatera högst upp på sidan
         fetch(`/Home/GetWeatherTemperatureNow?location=${location}`)
-    .then(response => response.text())
-    .then(data => {
+            .then(response => response.text())
+            .then(data => {
+                console.log("Current temperature data fetched:", data);
 
-        const [temperature, iconClass] = data.split('|');
-        document.querySelector('#temperature').textContent = `${temperature}`;
-        document.querySelector('#weather-icon').className = `wi ${iconClass}`;
-    })
-    .catch(error => console.error('Error fetching weather data:', error));
-
-    // Hämta och visa timvisa temperaturer
-    updateHourlyTemperatures(location);
+                const [temperature, iconClass] = data.split('|');
+                document.querySelector('#temperature').textContent = `${temperature}`;
+                document.querySelector('#weather-icon').className = `wi ${iconClass}`;
+            })
+            .catch(error => console.error('Error fetching current temperature:', error));
     }
-
-    function updateHourlyTemperatures(location) {
-    fetch(`/Home/GetHourlyTemperatures?location=${location}`)
-        .then(response => response.text())
-        .then(data => {
-            const rowContainer = document.getElementById('hourly-temperature-row');
-            const forecastDateContainer = document.getElementById('forecast-date');
-            rowContainer.innerHTML = ''; // Rensa tidigare data
-
-            // Dela upp den mottagna data-strängen
-            const hourlyData = data.split(', ');
-
-            // Visa datum en gång
-            const firstTime = hourlyData[0].split(': ')[0];
-            const date = new Date(firstTime).toLocaleDateString();
-            forecastDateContainer.textContent = `Datum: ${date}`;
-
-            hourlyData.forEach(entry => {
-                const [timeTemp, iconClass] = entry.split('|');
-                const [time, temp] = timeTemp.split(': ');
-                const hour = new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                // Skapa en container för varje timme med ikon
-                const hourContainer = document.createElement('div');
-                hourContainer.classList.add('hour-item', 'text-center');
-                hourContainer.style.margin = "0 10px";
-                hourContainer.innerHTML = `
-                    <i class="wi ${iconClass}" style="font-size: 24px;"></i>
-                    <div class="hour">${hour}</div>
-                    <div class="temp">${temp}</div>
-                `;
-
-                rowContainer.appendChild(hourContainer);
-            });
-        })
-        .catch(error => console.error('Error fetching hourly temperatures:', error));
 }
-}
-
 </script>

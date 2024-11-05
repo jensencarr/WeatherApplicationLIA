@@ -59,7 +59,7 @@ public async Task<IActionResult> GetHourlyTemperatures(string location)
     var hourlyData = ParseHourlyTemperatures(weatherData, 12);
 
     // Logga alla tider och temperaturer
-    Console.WriteLine("Kommande 8 timmars prognos för platsen:");
+    Console.WriteLine("Kommande 12 timmars prognos för platsen:");
     foreach (var data in hourlyData)
     {
         Console.WriteLine($"Tid: {data.Time}, Temperatur: {data.Temperature} °C");
@@ -101,12 +101,12 @@ private (double temperature, int weatherSymbol) ParseTemperatureNow(string weath
         var json = JObject.Parse(weatherData);
         var timeSeries = json["timeSeries"];
 
-        // Kontrollera att det finns minst två poster i timeSeries
-        if (timeSeries != null && timeSeries.Count() >= 2)
+        // Kontrollera att det finns data
+        if (timeSeries != null && timeSeries.Any())
         {
-            var secondTimeSeries = timeSeries.Skip(1).First(); // Väljer det andra objektet
+            var currentTimeSeries = timeSeries.First();
 
-            foreach (var parameter in secondTimeSeries["parameters"])
+            foreach (var parameter in currentTimeSeries["parameters"])
             {
                 if (parameter["name"]?.ToString() == "t") // Temperatur
                 {
@@ -117,6 +117,10 @@ private (double temperature, int weatherSymbol) ParseTemperatureNow(string weath
                     weatherSymbol = parameter["values"]?[0]?.Value<int>() ?? -1;
                 }
             }
+        }
+        else
+        {
+            Console.WriteLine("No time series data available in response.");
         }
     }
     catch (Exception ex)
@@ -170,12 +174,14 @@ private string GetWeatherIconClass(int weatherSymbol)
     return weatherIconMapping.ContainsKey(weatherSymbol) ? weatherIconMapping[weatherSymbol] : "wi-day-sunny";
 }
 
-    [HttpGet]
+[HttpGet]
 public async Task<IActionResult> GetWeatherTemperatureNow(string location)
 {
     (double lat, double lon) = GetCoordinates(location);
     var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
     
+    Console.WriteLine($"Fetched weather data: {weatherData}"); // Logga hela väderdatat
+
     // Hämta temperatur och vädersymbol
     var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
 
@@ -187,6 +193,59 @@ public async Task<IActionResult> GetWeatherTemperatureNow(string location)
     // Returnera temperatur och ikon-URL som en formaterad sträng
     return Content($"{temperature} °C|{iconUrl}");
 }
+
+public async Task<IActionResult> GetTemperatureForSelectedDate(string location, string date)
+{
+    Console.WriteLine($"Location: {location}, Selected Date: {date}");
+
+    (double lat, double lon) = GetCoordinates(location);
+    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
+    Console.WriteLine($"Weather data fetched for {location}");
+
+    var json = JObject.Parse(weatherData);
+    var timeSeries = json["timeSeries"];
+
+    // Konvertera det valda datumet till ett DateTime-objekt
+    if (!DateTime.TryParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var selectedDate))
+    {
+        Console.WriteLine("Ogiltigt datumformat. Kontrollera att datum är korrekt.");
+        return Content("Fel format på datum|wi-na");
+    }
+
+    Console.WriteLine($"Parsed Selected Date: {selectedDate}");
+
+    var dataForSelectedDate = timeSeries
+        .Where(ts => DateTime.Parse(ts["validTime"].ToString()).Date == selectedDate.Date)
+        .Take(12)
+        .Select(ts =>
+        {
+            var time = ts["validTime"].ToString();
+            var temperature = ts["parameters"]
+                .FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
+            var weatherSymbol = ts["parameters"]
+                .FirstOrDefault(p => p["name"].ToString() == "Wsymb2")?["values"]?[0]?.Value<int>() ?? -1;
+
+            return (Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol);
+        })
+        .ToList();
+
+    if (dataForSelectedDate.Any())
+    {
+        Console.WriteLine($"Data för {selectedDate:yyyy-MM-dd}: {dataForSelectedDate.Count} datapunkter hittade.");
+        
+        var hourlyDataString = string.Join(", ", dataForSelectedDate
+            .Select(d => $"{d.Time}: {d.Temperature} °C|{GetWeatherIconClass(d.WeatherSymbol)}"));
+        
+        Console.WriteLine("Formatted data string sent to client: " + hourlyDataString); // Ny logg
+        return Content(hourlyDataString);
+    }
+    else
+    {
+        Console.WriteLine("Ingen data hittades för det valda datumet.");
+        return Content("Ingen data|wi-na");
+    }
+}
+
 
 
 }
