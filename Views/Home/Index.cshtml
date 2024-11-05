@@ -97,6 +97,7 @@ function convertTemperature(tempC, toUnit) {
 }
 
 function convertDisplayedTemperatures(toUnit) {
+    // Uppdatera den aktuella temperaturen högst upp
     const temperatureElement = document.getElementById('temperature');
     let originalTempC = parseFloat(temperatureElement.getAttribute('data-original-temp'));
     if (!isNaN(originalTempC)) {
@@ -104,6 +105,7 @@ function convertDisplayedTemperatures(toUnit) {
         temperatureElement.textContent = `${convertedTemp} °${toUnit}`;
     }
 
+    // Uppdatera temperaturerna i tabellen
     const tempElements = document.querySelectorAll('#hourly-temperature-row .temp');
     tempElements.forEach(element => {
         let originalTemp = parseFloat(element.getAttribute('data-original-temp'));
@@ -117,6 +119,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("locationSelect").addEventListener("change", function () {
         const location = this.value;
         updateMap(location);
+    });
+
+    document.getElementById("unitSelect").addEventListener("change", function () {
+        const selectedUnit = this.value;
+        changeUnit(selectedUnit); // Uppdaterar temperaturer direkt
     });
 
     document.getElementById("getTemperature").addEventListener("click", function () {
@@ -179,6 +186,7 @@ function updateMap(location) {
             .then(response => response.text())
             .then(data => {
                 const [temperature, iconClass] = data.split('|');
+                document.querySelector('#temperature').setAttribute('data-original-temp', temperature); // Spara originalvärdet
                 document.querySelector('#temperature').textContent = `${convertTemperature(parseFloat(temperature), currentUnit)} °${currentUnit}`;
                 document.querySelector('#weather-icon').className = `wi ${iconClass}`;
             })
