@@ -6,7 +6,14 @@
 
 <div class="weather-container">
     <div class="text-center">
-        <h1 class="display-4">Väderprognos</h1>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="display-4">Väderprognos</h1>
+            <select class="unit-select ml-3" id="unitSelect" onchange="changeUnit(this.value)">
+                <option value="C">Celsius</option>
+                <option value="F">Fahrenheit</option>
+            </select>
+        </div>
+        
         <form asp-action="Index" method="post">
             <div class="form-group">
                 <div class="weather-display">
@@ -62,72 +69,90 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXsPiPvGQBlVn_gUR-lj8geNaBYF0YPVg&callback=initMap" async defer></script>
 
 <script>
-    let map;
-    let marker;
+let currentUnit = 'C';
+let map;
+let marker;
 
-    function initMap() {
-        const initialPosition = { lat: 59.3293, lng: 18.0686 }; // Stockholm som standard
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: initialPosition,
-            zoom: 10,
-        });
-
-        marker = new google.maps.Marker({
-            position: initialPosition,
-            map: map,
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("locationSelect").addEventListener("change", function () {
-            const location = this.value;
-            updateMap(location);
-        });
-
-        document.getElementById("getTemperature").addEventListener("click", function () {
-            const selectedDate = document.getElementById("dateSelect").value;
-            const location = document.getElementById("locationSelect").value;
-
-            if (selectedDate && location) {
-                fetch(`/Home/GetTemperatureForSelectedDate?location=${location}&date=${selectedDate}`)
-                    .then(response => response.text())
-                    .then(data => {
-                        console.log("Data fetched from server:", data);
-
-                        if (data === "Ingen data|wi-na") {
-                            alert("Ingen väderdata tillgänglig för det valda datumet.");
-                            return;
-                        }
-
-                        document.getElementById("forecast-date").textContent = `Datum: ${selectedDate}`;
-                        const hourlyTemperatureRow = document.getElementById("hourly-temperature-row");
-                        hourlyTemperatureRow.innerHTML = "";
-
-                        const hourlyDataArray = data.split(", ");
-                        hourlyDataArray.forEach(hourData => {
-                            const [timeTemp, iconClass] = hourData.split("|");
-                            if (timeTemp && iconClass) {
-                                const [time, temperature] = timeTemp.split(": ");
-
-                                const hourItem = document.createElement("div");
-                                hourItem.classList.add("hour-item", "text-center");
-                                hourItem.innerHTML = `
-                                    <i class="wi ${iconClass.trim()}" style="font-size: 50px;"></i>
-                                    <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                    <div class="temp">${temperature}</div>
-                                `;
-                                hourlyTemperatureRow.appendChild(hourItem);
-                            }
-                        });
-                    })
-                    .catch(error => console.error("Error fetching temperature data:", error));
-            } else {
-                alert("Vänligen välj ett datum och en plats.");
-            }
-        });
+function initMap() {
+    const initialPosition = { lat: 59.3293, lng: 18.0686 }; // Stockholm som standard
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: initialPosition,
+        zoom: 10,
     });
 
-    function updateMap(location) {
+    marker = new google.maps.Marker({
+        position: initialPosition,
+        map: map,
+    });
+}
+
+function changeUnit(unit) {
+    if (unit === currentUnit) return; // Kontrollera om det redan är rätt enhet
+    currentUnit = unit;
+    convertDisplayedTemperatures(unit);
+}
+
+function convertTemperature(tempC, toUnit) {
+    return toUnit === 'F' ? (tempC * 9 / 5 + 32).toFixed(1) : tempC;
+}
+
+function convertDisplayedTemperatures(toUnit) {
+    const temperatureElement = document.getElementById('temperature');
+    let originalTempC = parseFloat(temperatureElement.getAttribute('data-original-temp'));
+    if (!isNaN(originalTempC)) {
+        const convertedTemp = convertTemperature(originalTempC, toUnit);
+        temperatureElement.textContent = `${convertedTemp} °${toUnit}`;
+    }
+
+    const tempElements = document.querySelectorAll('#hourly-temperature-row .temp');
+    tempElements.forEach(element => {
+        let originalTemp = parseFloat(element.getAttribute('data-original-temp'));
+        if (!isNaN(originalTemp)) {
+            element.textContent = `${convertTemperature(originalTemp, toUnit)} °${toUnit}`;
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("locationSelect").addEventListener("change", function () {
+        const location = this.value;
+        updateMap(location);
+    });
+
+    document.getElementById("getTemperature").addEventListener("click", function () {
+        const selectedDate = document.getElementById("dateSelect").value;
+        const location = document.getElementById("locationSelect").value;
+
+        if (selectedDate && location) {
+            fetch(`/Home/GetTemperatureForSelectedDate?location=${location}&date=${selectedDate}`)
+                .then(response => response.text())
+                .then(data => {
+                    const hourlyTemperatureRow = document.getElementById("hourly-temperature-row");
+                    hourlyTemperatureRow.innerHTML = "";
+
+                    const hourlyDataArray = data.split(", ");
+                    hourlyDataArray.forEach(hourData => {
+                        const [timeTemp, iconClass] = hourData.split("|");
+                        const [time, temperature] = timeTemp.split(": ");
+
+                        const hourItem = document.createElement("div");
+                        hourItem.classList.add("hour-item", "text-center");
+                        hourItem.innerHTML = `
+                            <i class="wi ${iconClass.trim()}" style="font-size: 50px;"></i>
+                            <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div class="temp" data-original-temp="${temperature}">${convertTemperature(parseFloat(temperature), currentUnit)} °${currentUnit}</div>
+                        `;
+                        hourlyTemperatureRow.appendChild(hourItem);
+                    });
+                })
+                .catch(error => console.error("Error fetching temperature data:", error));
+        } else {
+            alert("Vänligen välj ett datum och en plats.");
+        }
+    });
+});
+
+function updateMap(location) {
     const coordinates = {
         stockholm: { lat: 59.3293, lng: 18.0686 },
         gothenburg: { lat: 57.7089, lng: 11.9746 },
@@ -150,14 +175,11 @@
         map.setCenter(newPosition);
         marker.setPosition(newPosition);
 
-        // Hämta aktuell temperatur för vald plats och uppdatera högst upp på sidan
         fetch(`/Home/GetWeatherTemperatureNow?location=${location}`)
             .then(response => response.text())
             .then(data => {
-                console.log("Current temperature data fetched:", data);
-
                 const [temperature, iconClass] = data.split('|');
-                document.querySelector('#temperature').textContent = `${temperature}`;
+                document.querySelector('#temperature').textContent = `${convertTemperature(parseFloat(temperature), currentUnit)} °${currentUnit}`;
                 document.querySelector('#weather-icon').className = `wi ${iconClass}`;
             })
             .catch(error => console.error('Error fetching current temperature:', error));

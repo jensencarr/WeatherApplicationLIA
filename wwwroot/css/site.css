@@ -80,3 +80,11 @@ body {
   font-weight: bold;
   color: #333;
 }
+.unit-select {
+  padding: 5px;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #f7f7f7;
+  color: #333;
+}
