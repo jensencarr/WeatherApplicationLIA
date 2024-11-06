@@ -175,7 +175,6 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
         var hourlyDataString = string.Join(", ", dataForSelectedDate
             .Select(d => $"{d.Time},{d.Temperature},{d.WindSpeed},{d.WindDirection},{d.Precipitation}|{GetWeatherIconClass(d.WeatherSymbol)}"));
 
-        Console.WriteLine("Hourly data string: " + hourlyDataString);
         return Content(hourlyDataString);
     }
     else
@@ -184,6 +183,71 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
         return Content("Ingen data|wi-na");
     }
 }
+
+public async Task<IActionResult> GetDailyAverages(string location, string date)
+{
+    Console.WriteLine($"Location: {location}, Selected Date: {date}");
+
+    (double lat, double lon) = GetCoordinates(location);
+    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
+    Console.WriteLine($"Weather data fetched for {location}");
+
+    var json = JObject.Parse(weatherData);
+    var timeSeries = json["timeSeries"];
+
+    if (!DateTime.TryParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var selectedDate))
+    {
+        Console.WriteLine("Ogiltigt datumformat. Kontrollera att datum är korrekt.");
+        return Content("Fel format på datum");
+    }
+
+    Console.WriteLine($"Parsed Selected Date: {selectedDate}");
+
+    var dataForSelectedDate = timeSeries
+        .Where(ts =>
+        {
+            var time = DateTime.Parse(ts["validTime"].ToString());
+            return time.Date == selectedDate.Date;
+        })
+        .ToList();
+
+    if (dataForSelectedDate.Any())
+    {
+        double totalTemperature = 0.0;
+        double totalWindSpeed = 0.0;
+        double totalPrecipitation = 0.0;
+        int count = dataForSelectedDate.Count;
+
+
+        foreach (var ts in dataForSelectedDate)
+        {
+            var temperature = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
+            var windSpeed = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "ws")?["values"]?[0]?.Value<double>() ?? 0.0;
+
+
+            totalTemperature += temperature;
+            totalWindSpeed += windSpeed;
+        }
+
+        // Beräkna genomsnitt
+        var avgTemperature = totalTemperature / count;
+        var avgWindSpeed = totalWindSpeed / count;
+
+        // Returnera resultatet som en formaterad textsträng
+        var result = $"Genomsnittlig väderdata:\n" +
+             $"{avgTemperature:F1} °C,\n" +
+             $" {avgWindSpeed:F1} m/s,\n";
+
+        return Content(result);
+    }
+    else
+    {
+        Console.WriteLine("Ingen data hittades för det valda datumet.");
+        return Content("Ingen data");
+    }
+}
+
+
 
 }
 

@@ -127,13 +127,35 @@ document.addEventListener("DOMContentLoaded", function () {
         changeUnit(selectedUnit); // Uppdaterar temperaturer direkt
     });
 
-    document.getElementById("getTemperature").addEventListener("click", function () {
+    function fetchDailyAverages(location, date) {
+    fetch(`/Home/GetDailyAverages?location=${location}&date=${date}`)
+        .then(response => response.text())
+        .then(data => {
+            let avgHeader = document.getElementById('avg-header');
+            if (!avgHeader) {
+                avgHeader = document.createElement('div');
+                avgHeader.id = 'avg-header';
+                avgHeader.style.fontWeight = 'bold';
+                avgHeader.style.marginBottom = '15px';
+                avgHeader.style.fontSize = '1.1rem';
+                document.querySelector('.forecast-container').prepend(avgHeader);
+            }
+            avgHeader.textContent = data;
+        })
+        .catch(error => console.error('Error fetching daily averages:', error));
+}
+
+document.getElementById("getTemperature").addEventListener("click", function () {
     const selectedDate = document.getElementById("dateSelect").value;
     const location = document.getElementById("locationSelect").value;
 
     if (selectedDate && location) {
-        document.getElementById("forecast-date").textContent = `Datum: ${selectedDate}`;
+        // Kalla på funktionen för att hämta och visa medelvärdena
+        fetchDailyAverages(location, selectedDate);
 
+        // Existerande logik för att visa timvis prognos
+        document.getElementById("forecast-date").textContent = `Datum: ${selectedDate}`;
+        
         fetch(`/Home/GetTemperatureForSelectedDate?location=${location}&date=${selectedDate}`)
             .then(response => response.text())
             .then(data => {
@@ -142,32 +164,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const hourlyDataArray = data.split(", ");
                 hourlyDataArray.forEach(hourData => {
-                const [timeTempWind, iconClass] = hourData.split("|");
-                const [time, temperature, windSpeed, windDirection, precipitation] = timeTempWind.split(",");
+                    const [timeTempWind, iconClass] = hourData.split("|");
+                    const [time, temperature, windSpeed, windDirection, precipitation] = timeTempWind.split(",");
 
-                // Skapa varje timme-prognos med `data-original-temp` för att möjliggöra konvertering
-                const hourItem = document.createElement("div");
-                hourItem.classList.add("hour-item");
-
-                hourItem.innerHTML = `
-                    <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                    <i class="wi ${iconClass.trim()}" style="font-size: 2rem; display: block;"></i>
-                    <div class="temp" data-original-temp="${temperature}">${parseFloat(temperature).toFixed(1)} °C</div>
-                    <div class="wind-speed">Wind: ${parseFloat(windSpeed).toFixed(1)} m/s</div>
-                    <div class="wind-direction">Direction: ${parseFloat(windDirection).toFixed(1)}°</div>
-                    <div class="precipitation">Precipitation: ${parseFloat(precipitation).toFixed(1)} mm</div>
-                `;
-
-                hourlyTemperatureRow.appendChild(hourItem);
-            });
+                    const hourItem = document.createElement("div");
+                    hourItem.classList.add("hour-item");
+                    hourItem.innerHTML = `
+                        <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <i class="wi ${iconClass.trim()}" style="font-size: 2rem; display: block;"></i>
+                        <div class="temp" data-original-temp="${temperature}">${parseFloat(temperature).toFixed(1)} °C</div>
+                        <div class="wind-speed">Wind: ${parseFloat(windSpeed).toFixed(1)} m/s</div>
+                        <div class="wind-direction">Direction: ${parseFloat(windDirection).toFixed(1)}°</div>
+                        <div class="precipitation">Precipitation: ${parseFloat(precipitation).toFixed(1)} mm</div>
+                    `;
+                    hourlyTemperatureRow.appendChild(hourItem);
+                });
             })
             .catch(error => console.error("Error fetching temperature data:", error));
     } else {
         alert("Vänligen välj ett datum och en plats.");
     }
-});
-
-
+    });
 });
 
 function updateMap(location) {
