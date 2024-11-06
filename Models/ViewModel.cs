@@ -1,9 +1,10 @@
 namespace WeatherApplicationLIA.ViewModels
 {
     public class LocationWeatherViewModel
-    {
-        public string SelectedLocation { get; set; }
-        public string MapLocation { get; set; }  // Koordinaterna att visa på kartan
-        public double Temperature { get; set; }  // Väderinformationen
-    }
+{
+    public string SelectedLocation { get; set; }
+    public string MapLocation { get; set; }
+    public double Temperature { get; set; }
+    public int WeatherSymbol { get; set; }  // Ny egenskap för vädersymbolen
+}
 }

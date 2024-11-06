@@ -142,24 +142,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const hourlyDataArray = data.split(", ");
                 hourlyDataArray.forEach(hourData => {
-                    const [timeTempWind, iconClass] = hourData.split("|");
-                    const [time, temperature, windSpeed, windDirection] = timeTempWind.split(",");
+                const [timeTempWind, iconClass] = hourData.split("|");
+                const [time, temperature, windSpeed, windDirection] = timeTempWind.split(",");
 
-                    // Create forecast item
-                    const hourItem = document.createElement("div");
-                    hourItem.classList.add("hour-item");
+                // Skapa varje timme-prognos med `data-original-temp` för att möjliggöra konvertering
+                const hourItem = document.createElement("div");
+                hourItem.classList.add("hour-item");
 
-                    // Place icon between time and temperature
-                    hourItem.innerHTML = `
-                        <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                        <i class="wi ${iconClass.trim()}" style="font-size: 2rem; display: block;"></i>
-                        <div class="temp">${parseFloat(temperature).toFixed(1)} °C</div>
-                        <div class="wind-speed">Wind: ${parseFloat(windSpeed).toFixed(1)} m/s</div>
-                        <div class="wind-direction">Direction: ${parseFloat(windDirection).toFixed(1)}°</div>
-                    `;
+                hourItem.innerHTML = `
+                    <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    <i class="wi ${iconClass.trim()}" style="font-size: 2rem; display: block;"></i>
+                    <div class="temp" data-original-temp="${temperature}">${parseFloat(temperature).toFixed(1)} °C</div>
+                    <div class="wind-speed">Wind: ${parseFloat(windSpeed).toFixed(1)} m/s</div>
+                    <div class="wind-direction">Direction: ${parseFloat(windDirection).toFixed(1)}°</div>
+                `;
 
-                    hourlyTemperatureRow.appendChild(hourItem);
-                });
+                hourlyTemperatureRow.appendChild(hourItem);
+            });
             })
             .catch(error => console.error("Error fetching temperature data:", error));
     } else {
