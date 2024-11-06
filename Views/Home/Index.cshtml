@@ -197,6 +197,19 @@ function updateMap(location) {
             .then(response => response.text())
             .then(data => {
                 const [temperature, iconClass] = data.split('|');
+
+                // Skapa eller uppdatera texten ovanför temperatur och ikon
+                let tempHeader = document.getElementById('temp-header');
+                if (!tempHeader) {
+                    tempHeader = document.createElement('h3'); // Skapa en h3 istället för en div
+                    tempHeader.id = 'temp-header';
+                    tempHeader.style.fontWeight = 'bold';
+                    tempHeader.style.marginBottom = '10px';
+                    tempHeader.textContent = 'Temperatur nu';
+                    
+                    // Lägg till h3-rubriken i .form-group istället för .weather-display
+                    document.querySelector('.form-group').prepend(tempHeader);
+                }
                 document.querySelector('#temperature').setAttribute('data-original-temp', temperature); // Spara originalvärdet
                 document.querySelector('#temperature').textContent = `${convertTemperature(parseFloat(temperature), currentUnit)} °${currentUnit}`;
                 document.querySelector('#weather-icon').className = `wi ${iconClass}`;
