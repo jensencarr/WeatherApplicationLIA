@@ -17,24 +17,23 @@ public class HomeController : Controller
         return View(new LocationWeatherViewModel());
     }
 
-   [HttpPost]
-public async Task<ActionResult> Index(LocationWeatherViewModel model)
+
+[HttpGet]
+public async Task<IActionResult> GetWeatherTemperatureNow(string location)
 {
-    if (!string.IsNullOrEmpty(model.SelectedLocation))
-    {
-        (double lat, double lon) = GetCoordinates(model.SelectedLocation);
-        model.MapLocation = $"Lat: {lat}, Lon: {lon}";
+    (double lat, double lon) = GetCoordinates(location);
+    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
 
-        // Hämta väderdata för platsen
-        string weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
-        
-        // Använd den nya ParseWeatherData-metoden för att hämta både temperatur och vädersymbol
-        var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
-        
-        model.Temperature = temperature;
-    }
+    // Hämta temperatur och vädersymbol
+    var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
 
-    return View(model);
+    Console.WriteLine($"Parsed temperature: {temperature}, weather symbol: {weatherSymbol}");
+
+    // Hämta ikonen baserat på weatherSymbol
+    string iconUrl = GetWeatherIconClass(weatherSymbol);
+
+    // Returnera temperatur och ikon-URL som en formaterad sträng
+    return Content($"{temperature} °C|{iconUrl}");
 }
 
     private (double lat, double lon) GetCoordinates(string location)
@@ -58,6 +57,7 @@ public async Task<ActionResult> Index(LocationWeatherViewModel model)
         _ => (59.3293, 18.0686) // Standard till Stockholm om platsen inte finns
     };
 }
+
 
 
 private (double temperature, int weatherSymbol) ParseTemperatureNow(string weatherData)
@@ -99,19 +99,6 @@ private (double temperature, int weatherSymbol) ParseTemperatureNow(string weath
 
     return (temperature, weatherSymbol);
 }
-    public async Task<IActionResult> GetWeather(string category, string version, double longitude, double latitude)
-{
-    try
-    {
-        var weatherData = await _weatherService.GetWeatherDataAsync(category, version, longitude, latitude);
-        return Json(weatherData);
-    }
-    catch (HttpRequestException ex)
-    {
-        return StatusCode(500, ex.Message);
-    }   
-    
-}
 
 private string GetWeatherIconClass(int weatherSymbol)
 {
@@ -143,23 +130,6 @@ private string GetWeatherIconClass(int weatherSymbol)
     return weatherIconMapping.ContainsKey(weatherSymbol) ? weatherIconMapping[weatherSymbol] : "wi-day-sunny";
 }
 
-[HttpGet]
-public async Task<IActionResult> GetWeatherTemperatureNow(string location)
-{
-    (double lat, double lon) = GetCoordinates(location);
-    var weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
-
-    // Hämta temperatur och vädersymbol
-    var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
-
-    Console.WriteLine($"Parsed temperature: {temperature}, weather symbol: {weatherSymbol}");
-
-    // Hämta ikonen baserat på weatherSymbol
-    string iconUrl = GetWeatherIconClass(weatherSymbol);
-
-    // Returnera temperatur och ikon-URL som en formaterad sträng
-    return Content($"{temperature} °C|{iconUrl}");
-}
 
 public async Task<IActionResult> GetTemperatureForSelectedDate(string location, string date)
 {
@@ -256,6 +226,43 @@ private List<(string Time, double Temperature, int WeatherSymbol)> ParseHourlyTe
     }
 
     return hourlyTemperatures;
-} */
+} 
+
+
+
+public async Task<ActionResult> Index(LocationWeatherViewModel model)
+{
+    if (!string.IsNullOrEmpty(model.SelectedLocation))
+    {
+        (double lat, double lon) = GetCoordinates(model.SelectedLocation);
+        model.MapLocation = $"Lat: {lat}, Lon: {lon}";
+
+        // Hämta väderdata för platsen
+        string weatherData = await _weatherService.GetWeatherDataAsync("pmp3g", "2", lon, lat);
+        
+        // Använd den nya ParseWeatherData-metoden för att hämta både temperatur och vädersymbol
+        var (temperature, weatherSymbol) = ParseTemperatureNow(weatherData);
+        
+        model.Temperature = temperature;
+    }
+
+    return View(model);
+}
+
+    public async Task<IActionResult> GetWeather(string category, string version, double longitude, double latitude)
+{
+    try
+    {
+        var weatherData = await _weatherService.GetWeatherDataAsync(category, version, longitude, latitude);
+        return Json(weatherData);
+    }
+    catch (HttpRequestException ex)
+    {
+        return StatusCode(500, ex.Message);
+    }   
+    
+}*/
+
+
 
 
