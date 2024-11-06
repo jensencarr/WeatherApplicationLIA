@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const hourlyDataArray = data.split(", ");
                 hourlyDataArray.forEach(hourData => {
                 const [timeTempWind, iconClass] = hourData.split("|");
-                const [time, temperature, windSpeed, windDirection] = timeTempWind.split(",");
+                const [time, temperature, windSpeed, windDirection, precipitation] = timeTempWind.split(",");
 
                 // Skapa varje timme-prognos med `data-original-temp` för att möjliggöra konvertering
                 const hourItem = document.createElement("div");
@@ -155,6 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="temp" data-original-temp="${temperature}">${parseFloat(temperature).toFixed(1)} °C</div>
                     <div class="wind-speed">Wind: ${parseFloat(windSpeed).toFixed(1)} m/s</div>
                     <div class="wind-direction">Direction: ${parseFloat(windDirection).toFixed(1)}°</div>
+                    <div class="precipitation">Precipitation: ${parseFloat(precipitation).toFixed(1)} mm</div>
                 `;
 
                 hourlyTemperatureRow.appendChild(hourItem);

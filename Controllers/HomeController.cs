@@ -164,15 +164,16 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
             var weatherSymbol = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "Wsymb2")?["values"]?[0]?.Value<int>() ?? -1;
             var windSpeed = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "ws")?["values"]?[0]?.Value<double>() ?? 0.0;
             var windDirection = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "wd")?["values"]?[0]?.Value<double>() ?? 0.0;
+            var precipitation = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "pmean")?["values"]?[0]?.Value<double>() ?? 0.0;
 
-            return (Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol, WindSpeed: windSpeed, WindDirection: windDirection);
+            return (Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol, WindSpeed: windSpeed, WindDirection: windDirection, Precipitation: precipitation);
         })
         .ToList();
 
     if (dataForSelectedDate.Any())
     {
         var hourlyDataString = string.Join(", ", dataForSelectedDate
-            .Select(d => $"{d.Time},{d.Temperature},{d.WindSpeed},{d.WindDirection}|{GetWeatherIconClass(d.WeatherSymbol)}"));
+            .Select(d => $"{d.Time},{d.Temperature},{d.WindSpeed},{d.WindDirection},{d.Precipitation}|{GetWeatherIconClass(d.WeatherSymbol)}"));
 
         Console.WriteLine("Hourly data string: " + hourlyDataString);
         return Content(hourlyDataString);

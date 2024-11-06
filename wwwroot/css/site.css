@@ -140,3 +140,8 @@ html, body {
   color: #666;
   margin-top: 2px;
 }
+.precipitation {
+  font-size: 0.9rem;
+  color: #337ab7;
+  margin-top: 5px;
+}
