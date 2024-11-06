@@ -172,7 +172,6 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
     var json = JObject.Parse(weatherData);
     var timeSeries = json["timeSeries"];
 
-    // Konvertera det valda datumet till ett DateTime-objekt
     if (!DateTime.TryParseExact(date, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var selectedDate))
     {
         Console.WriteLine("Ogiltigt datumformat. Kontrollera att datum är korrekt.");
@@ -181,7 +180,6 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
 
     Console.WriteLine($"Parsed Selected Date: {selectedDate}");
 
-    // Filtrera ut datapunkter för det valda datumet, startande från 08:00 och max 15 punkter
     var dataForSelectedDate = timeSeries
         .Where(ts =>
         {
@@ -192,22 +190,21 @@ public async Task<IActionResult> GetTemperatureForSelectedDate(string location, 
         .Select(ts =>
         {
             var time = ts["validTime"].ToString();
-            var temperature = ts["parameters"]
-                .FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
-            var weatherSymbol = ts["parameters"]
-                .FirstOrDefault(p => p["name"].ToString() == "Wsymb2")?["values"]?[0]?.Value<int>() ?? -1;
+            var temperature = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "t")?["values"]?[0]?.Value<double>() ?? 0.0;
+            var weatherSymbol = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "Wsymb2")?["values"]?[0]?.Value<int>() ?? -1;
+            var windSpeed = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "ws")?["values"]?[0]?.Value<double>() ?? 0.0;
+            var windDirection = ts["parameters"].FirstOrDefault(p => p["name"].ToString() == "wd")?["values"]?[0]?.Value<double>() ?? 0.0;
 
-            return (Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol);
+            return (Time: time, Temperature: temperature, WeatherSymbol: weatherSymbol, WindSpeed: windSpeed, WindDirection: windDirection);
         })
         .ToList();
 
     if (dataForSelectedDate.Any())
     {
-        Console.WriteLine($"Data för {selectedDate:yyyy-MM-dd}: {dataForSelectedDate.Count} datapunkter hittade.");
-        
         var hourlyDataString = string.Join(", ", dataForSelectedDate
-            .Select(d => $"{d.Time}: {d.Temperature} °C|{GetWeatherIconClass(d.WeatherSymbol)}"));
-        
+            .Select(d => $"{d.Time},{d.Temperature},{d.WindSpeed},{d.WindDirection}|{GetWeatherIconClass(d.WeatherSymbol)}"));
+
+        Console.WriteLine("Hourly data string: " + hourlyDataString);
         return Content(hourlyDataString);
     }
     else

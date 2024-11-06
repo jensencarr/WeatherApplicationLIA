@@ -58,10 +58,10 @@
 </div>
 
 <div class="forecast-container">
-    <h3>Temperatur för valda datumet</h3>
-    <div id="forecast-date" class="forecast-date">Datum: --</div>
-    <div id="hourly-temperature-row" class="d-flex justify-content-center"></div>
-</div>
+    <h2 class="forecast-title">Temperatur för valda datumet</h2>
+    <div id="forecast-date">Datum: --</div>
+    <div id="hourly-temperature-row" class="hourly-forecast"></div>
+</div><
 
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="~/css/weather-icons.css">
@@ -69,6 +69,7 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXsPiPvGQBlVn_gUR-lj8geNaBYF0YPVg&callback=initMap" async defer></script>
 
 <script>
+    
 let currentUnit = 'C';
 let map;
 let marker;
@@ -131,7 +132,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const location = document.getElementById("locationSelect").value;
 
     if (selectedDate && location) {
-        // Sätt det valda datumet i forecast-date innan du hämtar data
         document.getElementById("forecast-date").textContent = `Datum: ${selectedDate}`;
 
         fetch(`/Home/GetTemperatureForSelectedDate?location=${location}&date=${selectedDate}`)
@@ -142,16 +142,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const hourlyDataArray = data.split(", ");
                 hourlyDataArray.forEach(hourData => {
-                    const [timeTemp, iconClass] = hourData.split("|");
-                    const [time, temperature] = timeTemp.split(": ");
+                    const [timeTempWind, iconClass] = hourData.split("|");
+                    const [time, temperature, windSpeed, windDirection] = timeTempWind.split(",");
 
+                    // Create forecast item
                     const hourItem = document.createElement("div");
-                    hourItem.classList.add("hour-item", "text-center");
+                    hourItem.classList.add("hour-item");
+
+                    // Place icon between time and temperature
                     hourItem.innerHTML = `
-                        <i class="wi ${iconClass.trim()}" style="font-size: 50px;"></i>
                         <div class="hour">${new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                        <div class="temp" data-original-temp="${temperature}">${convertTemperature(parseFloat(temperature), currentUnit)} °${currentUnit}</div>
+                        <i class="wi ${iconClass.trim()}" style="font-size: 2rem; display: block;"></i>
+                        <div class="temp">${parseFloat(temperature).toFixed(1)} °C</div>
+                        <div class="wind-speed">Wind: ${parseFloat(windSpeed).toFixed(1)} m/s</div>
+                        <div class="wind-direction">Direction: ${parseFloat(windDirection).toFixed(1)}°</div>
                     `;
+
                     hourlyTemperatureRow.appendChild(hourItem);
                 });
             })
@@ -160,6 +166,8 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Vänligen välj ett datum och en plats.");
     }
 });
+
+
 });
 
 function updateMap(location) {
